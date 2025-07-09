@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Profile.css';
 
 function Profile() {
-  // User data
-  const user = {
+  // Enhanced user data with state
+  const [user, setUser] = useState({
     name: "Royce Stephane",
     username: "@royce_productive",
     bio: "Turning daily progress into social connection",
@@ -12,17 +12,40 @@ function Profile() {
       posts: 343,
       bestStreak: 28
     },
-    recentPost: "Completed my morning workout routine and meal prep for the week!"
+    recentPosts: [
+      "Completed my morning workout routine and meal prep for the week!",
+      "Just shipped a new feature to production 🚀"
+    ],
+    activeTab: 'profile'
+  });
+
+  // Time and progress simulation
+  const [time, setTime] = useState('10:40 AM');
+  const [progress, setProgress] = useState(95);
+
+  useEffect(() => {
+    // Update time every minute
+    const timer = setInterval(() => {
+      const now = new Date();
+      setTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    }, 60000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Tab navigation handler
+  const handleTabChange = (tab) => {
+    setUser({...user, activeTab: tab});
   };
 
   return (
     <div className="profile-screen">
-      {/* Header */}
+      {/* Header with dynamic time */}
       <div className="app-header">
         <h1>ProductiveFlow</h1>
         <div className="header-meta">
-          <span>10:40 AM</span>
-          <span>95%</span>
+          <span>{time}</span>
+          <span>{progress}%</span>
         </div>
       </div>
 
@@ -39,35 +62,42 @@ function Profile() {
 
         {/* Stats Grid */}
         <div className="stats-grid">
-          <div className="stat">
-            <span className="stat-value">{user.stats.streak}</span>
-            <span className="stat-label">Current Streak</span>
-          </div>
-          <div className="stat">
-            <span className="stat-value">{user.stats.posts}</span>
-            <span className="stat-label">Total Posts</span>
-          </div>
-          <div className="stat">
-            <span className="stat-value">{user.stats.bestStreak}</span>
-            <span className="stat-label">Best Streak</span>
-          </div>
+          {Object.entries(user.stats).map(([key, value]) => (
+            <div key={key} className="stat">
+              <span className="stat-value">{value}</span>
+              <span className="stat-label">
+                {key.replace(/([A-Z])/g, ' $1').trim()}
+              </span>
+            </div>
+          ))}
         </div>
 
-        {/* Recent Post */}
-        <div className="recent-post">
+        {/* Recent Posts with multiple posts */}
+        <div className="recent-posts">
           <h3>Recent Posts</h3>
-          <div className="post-content">
-            <p>"{user.recentPost}"</p>
-          </div>
+          {user.recentPosts.map((post, index) => (
+            <div key={index} className="post-card">
+              <p>"{post}"</p>
+              <div className="post-actions">
+                <button className="like-btn">👍 Like</button>
+                <button className="comment-btn">💬 Comment</button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation with active state */}
       <nav className="bottom-nav">
-        <button>Home</button>
-        <button>Post</button>
-        <button>Feed</button>
-        <button className="active">Profile</button>
+        {['home', 'post', 'feed', 'profile'].map((tab) => (
+          <button
+            key={tab}
+            className={user.activeTab === tab ? 'active' : ''}
+            onClick={() => handleTabChange(tab)}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
       </nav>
     </div>
   );
